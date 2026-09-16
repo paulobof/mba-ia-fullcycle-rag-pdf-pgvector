@@ -1,0 +1,72 @@
+[project]
+name = "mba-ia-fullcycle-rag-pdf-pgvector"
+version = "1.0.0"
+description = "Ingestão de PDF e busca semântica com LangChain, Postgres e pgVector"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "langchain==1.4.0",
+    "langchain-community==0.4.2",
+    "langchain-text-splitters==1.1.2",
+    "langchain-postgres==0.0.18",
+    "langchain-openai==1.6.2",
+    "langchain-google-genai==4.4.0",
+    "psycopg[binary]==3.3.5",
+    "pypdf==6.18.1",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "mypy==2.3.1",
+    "ruff==0.16.7",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q -ra --strict-markers --strict-config --cov=src --cov-branch --cov-fail-under=90 --cov-report=term-missing -m 'not integration'"
+markers = [
+    "integration: exige Postgres com pgVector em execução (desativado por padrão)",
+]
+filterwarnings = [
+    "error",
+    # langchain-community está em sunset, mas é o pacote indicado pelo desafio para o PyPDFLoader.
+    "ignore:`langchain-community` is being sunset:DeprecationWarning",
+    "ignore:'_UnionGenericAlias' is deprecated:DeprecationWarning",
+]
+
+[tool.mypy]
+python_version = "3.14"
+enable_error_code = ["redundant-expr", "truthy-bool", "ignore-without-code"]
+files = ["src", "tests"]
+mypy_path = "src"
+strict = true
+warn_unreachable = true
+disallow_any_explicit = false
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["langchain_community.*", "langchain_postgres.*", "langchain_google_genai.*"]
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 90
+target-version = "py314"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "BLE", "SIM", "RUF", "ANN", "D"]
+ignore = ["D203", "D213"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D103", "ANN401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
